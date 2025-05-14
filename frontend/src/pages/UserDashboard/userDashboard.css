@@ -1,0 +1,162 @@
+.user-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+h3 {
+  color: #444;
+  margin-bottom: 15px;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.request-form-container, .requests-list-container {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.request-form-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.requests-list-container {
+  flex: 2;
+  min-width: 400px;
+}
+
+.request-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+  font-weight: bold;
+}
+
+.form-group input, .form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.submit-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+}
+
+.no-requests {
+  text-align: center;
+  color: #777;
+  padding: 20px;
+  background-color: white;
+  border-radius: 5px;
+}
+
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.request-item {
+  background-color: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.request-item h4 {
+  margin-top: 0;
+  color: #333;
+}
+
+.request-status {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.status-pending {
+  color: #ff9800;
+}
+
+.status-approved {
+  color: #4caf50;
+}
+
+.status-rejected {
+  color: #f44336;
+}
+
+.request-response {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.error-message {
+  color: #f44336;
+  background-color: #ffebee;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.success-message {
+  color: #4caf50;
+  background-color: #e8f5e9;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+  
+  .request-form-container, .requests-list-container {
+    width: 100%;
+  }
+}
