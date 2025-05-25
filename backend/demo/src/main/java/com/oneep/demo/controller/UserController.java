@@ -79,4 +79,20 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+    @PutMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<User> updateProfile(@RequestBody User updatedUser) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    user.setFirstName(updatedUser.getFirstName());
+                    user.setLastName(updatedUser.getLastName());
+                    user.setEmail(updatedUser.getEmail());
+                    userRepository.save(user);
+                    return ResponseEntity.ok(user);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

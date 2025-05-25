@@ -8,6 +8,7 @@ import Profile from './components/Profile/profile.jsx';
 import HomePage from './pages/HomePage/homePage.jsx';
 import Header from './components/Header/header.jsx';
 import Footer from './components/Footer/footer.jsx';
+import AppelsOffres from './pages/AppelsOffres/appelsOffres.jsx'
 import './App.css';
 
 const PrivateRoute = ({ children, role }) => {
@@ -67,6 +68,15 @@ const App = () => {
             </PrivateRoute>
           }
         />
+        <Route 
+          path="/appels-offres" 
+            element={
+            <Layout>
+              <AppelsOffres />
+            </Layout>
+          }
+         />
+
         <Route
           path="/admin"
           element={
