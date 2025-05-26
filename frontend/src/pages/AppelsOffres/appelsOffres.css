@@ -112,6 +112,58 @@ button:hover {
   font-size: 14px;
   border-radius: 8px;
 }
+/* Ajoutez ces styles à votre fichier appelsOffres.css */
+
+/* Style pour le bouton "Déjà postulé" */
+.btn-applied {
+  background-color: #28a745;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: default;
+  display: inline-block;
+}
+
+/* Style pour les appels d'offres expirés */
+.btn-expired {
+  background-color: #6c757d;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: default;
+  display: inline-block;
+}
+
+/* Amélioration du style existant pour le bouton postuler */
+.btn-postuler {
+  background-color: #007bff;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-postuler:hover {
+  background-color: #0056b3;
+}
+
+/* Espacement entre les boutons d'action */
+.actions > * {
+  margin-right: 8px;
+}
+
+.actions > *:last-child {
+  margin-right: 0;
+}
 
 .btn-submit {
   background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);

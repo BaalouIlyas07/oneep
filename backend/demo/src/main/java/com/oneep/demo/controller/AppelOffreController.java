@@ -1,7 +1,6 @@
 package com.oneep.demo.controller;
 
 import com.oneep.demo.model.AppelOffre;
-import com.oneep.demo.model.User;
 import com.oneep.demo.service.AppelOffreService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -110,4 +109,18 @@ public class AppelOffreController {
             return ResponseEntity.notFound().build();
         }
     }
+    // Ajoutez cette méthode dans votre AppelOffreController
+
+    @GetMapping("/{id}/has-applied")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Boolean> hasUserApplied(@PathVariable Long id, Authentication authentication) {
+        try {
+            String userEmail = authentication.getName();
+            boolean hasApplied = appelOffreService.hasUserApplied(id, userEmail);
+            return ResponseEntity.ok(hasApplied);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(false);
+        }
+    }
+  
 }

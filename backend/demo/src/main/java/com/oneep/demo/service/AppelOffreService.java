@@ -99,4 +99,9 @@ public class AppelOffreService {
     public boolean aDejaPostule(Long appelOffreId, String userEmail) {
         return postulationRepository.existsByAppelOffreIdAndEmailUser(appelOffreId, userEmail);
     }
+    // Ajoutez cette méthode dans votre AppelOffreService
+
+    public boolean hasUserApplied(Long appelOffreId, String userEmail) {
+    return postulationRepository.existsByAppelOffreIdAndEmailUser(appelOffreId, userEmail);
+}
 }

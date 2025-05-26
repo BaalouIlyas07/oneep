@@ -11,6 +11,8 @@ const AppelsOffres = () => {
   const [currentAppel, setCurrentAppel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Nouvel état pour suivre les postulations
+  const [userApplications, setUserApplications] = useState({});
   const [formData, setFormData] = useState({
     titre: '',
     description: '',
@@ -20,18 +22,18 @@ const AppelsOffres = () => {
     site: '',
     numeroAO: ''
   });
+
   const navigate = useNavigate();
 
   // Vérifier l'authentification et charger les données
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
-    
+   
     if (!token) {
       navigate('/login');
       return;
     }
-
     setUserRole(role);
     fetchAppelsOffres();
   }, [navigate]);
@@ -40,11 +42,45 @@ const AppelsOffres = () => {
     try {
       const response = await axios.get('http://localhost:8080/api/appels-offres');
       setAppelsOffres(response.data);
+      
+      // Si l'utilisateur est un USER, vérifier ses postulations
+      const role = localStorage.getItem('role');
+      if (role === 'USER') {
+        await checkUserApplications(response.data);
+      }
     } catch (error) {
       setError("Erreur de chargement des appels d'offres");
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Nouvelle fonction pour vérifier les postulations de l'utilisateur
+  const checkUserApplications = async (appels) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      
+      const applications = {};
+      
+      // Vérifier pour chaque appel d'offre si l'utilisateur a postulé
+      for (const appel of appels) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8080/api/appels-offres/${appel.id}/has-applied`,
+            config
+          );
+          applications[appel.id] = response.data;
+        } catch (error) {
+          console.error(`Erreur lors de la vérification pour l'appel ${appel.id}:`, error);
+          applications[appel.id] = false;
+        }
+      }
+      
+      setUserApplications(applications);
+    } catch (error) {
+      console.error('Erreur lors de la vérification des postulations:', error);
     }
   };
 
@@ -79,17 +115,16 @@ const AppelsOffres = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+   
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-
       if (currentAppel) {
         await axios.put(`http://localhost:8080/api/appels-offres/${currentAppel.id}`, formData, config);
       } else {
         await axios.post('http://localhost:8080/api/appels-offres', formData, config);
       }
-      
+     
       await fetchAppelsOffres();
       resetForm();
       setShowAddForm(false);
@@ -137,10 +172,36 @@ const AppelsOffres = () => {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      
+      // Mettre à jour l'état local pour refléter la postulation
+      setUserApplications(prev => ({
+        ...prev,
+        [id]: true
+      }));
+      
       alert("Votre candidature a été enregistrée avec succès !");
     } catch (error) {
       setError(error.response?.data?.message || "Erreur lors de la postulation");
     }
+  };
+
+  // Fonction pour déterminer le contenu du bouton d'action
+  const getActionButton = (appel) => {
+    if (userRole !== 'USER') return null;
+    
+    if (isDateExpired(appel.dateLimite)) {
+      return <span className="btn-expired">Expiré</span>;
+    }
+    
+    if (userApplications[appel.id]) {
+      return <span className="btn-applied">Déjà postulé</span>;
+    }
+    
+    return (
+      <button onClick={() => postuler(appel.id)} className="btn-postuler">
+        Postuler
+      </button>
+    );
   };
 
   if (loading) return <div className="loading">Chargement en cours...</div>;
@@ -188,11 +249,8 @@ const AppelsOffres = () => {
                     {isDateExpired(appel.dateLimite) && <span> (Expiré)</span>}
                   </td>
                   <td className="actions">
-                    {userRole === 'USER' && !isDateExpired(appel.dateLimite) && (
-                      <button onClick={() => postuler(appel.id)} className="btn-postuler">
-                        Postuler
-                      </button>
-                    )}
+                    {getActionButton(appel)}
+                    
                     {userRole === 'ADMIN' && (
                       <>
                         <button onClick={() => modifierAppelOffre(appel)} className="btn-edit">
@@ -226,7 +284,6 @@ const AppelsOffres = () => {
                   required
                 />
               </div>
-
               <div className="form-group">
                 <label>N° AO *</label>
                 <input
@@ -237,7 +294,7 @@ const AppelsOffres = () => {
                   required
                 />
               </div>
-              
+             
               <div className="form-group">
                 <label>Dénomination (Titre) *</label>
                 <input
@@ -248,7 +305,6 @@ const AppelsOffres = () => {
                   required
                 />
               </div>
-
               <div className="form-group">
                 <label>Description</label>
                 <textarea
@@ -258,7 +314,6 @@ const AppelsOffres = () => {
                   rows="3"
                 />
               </div>
-
               <div className="form-group">
                 <label>Montant Estimatif (€)</label>
                 <input
@@ -270,7 +325,6 @@ const AppelsOffres = () => {
                   step="0.01"
                 />
               </div>
-
               <div className="form-group">
                 <label>Date Lancement *</label>
                 <input
@@ -281,7 +335,6 @@ const AppelsOffres = () => {
                   required
                 />
               </div>
-
               <div className="form-group">
                 <label>Date Limite *</label>
                 <input
@@ -292,7 +345,7 @@ const AppelsOffres = () => {
                   required
                 />
               </div>
-              
+             
               <div className="form-actions">
                 <button type="submit" className="btn-submit">
                   {currentAppel ? "Enregistrer" : "Ajouter"}
