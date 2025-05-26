@@ -1,3 +1,27 @@
+:root {
+  --primary-blue: #2563eb;
+  --primary-dark: #1d4ed8;
+  --success-green: #059669;
+  --warning-orange: #ea580c;
+  --danger-red: #dc2626;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+}
 /* AppelsOffres.css */
 .appels-offres-container {
   padding: 20px;
@@ -27,44 +51,48 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
-
+/* Table claire et lisible */
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
+/* En-têtes de colonnes */
 th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background-color: var(--gray-900);
+  color: var(--white);
   font-weight: 600;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 15px 12px;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.25rem;
   text-align: left;
-  font-size: 12px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  border-bottom: 2px solid var(--primary-blue);
 }
 
+/* Cellules du tableau */
 td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--gray-200);
   vertical-align: middle;
+  color: var(--gray-700);
+  font-weight: 500;
 }
 
-tr:nth-child(even) {
-  background-color: #fafafa;
+/* Alternance des lignes */
+tbody tr:nth-child(even) {
+  background-color: var(--gray-50);
 }
 
-tr:hover {
-  background-color: #f0f8ff;
-  transform: scale(1.001);
-  transition: all 0.2s ease;
+/* Effet de survol */
+tbody tr:hover {
+  background-color: #eff6ff;
+  transition: background-color 0.15s ease;
 }
+/* Modifier ces styles existants */
 
+/* Ancien style (à remplacer) */
 .expired {
   color: #dc3545;
   font-weight: 600;
@@ -77,6 +105,38 @@ tr:hover {
   padding: 2px 6px;
   border-radius: 12px;
   margin-left: 8px;
+}
+
+/* Nouveau style */
+/* Style pour toutes les dates limites */
+.date-limite {
+  color: #3e30d2; /* Rouge vif pour toutes les dates limites */
+  font-weight: 500;
+}
+
+/* Style spécial pour les dates limites expirées */
+.expired-date-limite {
+  color: #dc2626;
+  font-weight: 600;
+  position: relative;
+}
+
+
+.expired-date-limite span {
+  font-size: 11px;
+  background: #dc3545;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+/* Mettre à jour les sélecteurs dans le tableau */
+
+
+td.expired-date-limite {
+  position: relative;
 }
 
 .actions {
