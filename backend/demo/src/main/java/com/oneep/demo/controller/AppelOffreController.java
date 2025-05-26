@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/appels-offres")
-@CrossOrigin(origins = "http://localhost:3000") // Ajustez selon votre URL frontend
+@CrossOrigin(origins = "http://localhost:3000")
 public class AppelOffreController {
 
     private final AppelOffreService appelOffreService;
@@ -21,14 +21,12 @@ public class AppelOffreController {
         this.appelOffreService = appelOffreService;
     }
 
-    // ✅ Accessible à tous (même non connectés)
     @GetMapping
     public ResponseEntity<List<AppelOffre>> getAllAppelsOffres() {
         List<AppelOffre> appelsOffres = appelOffreService.getAllAppelsOffres();
         return ResponseEntity.ok(appelsOffres);
     }
 
-    // ✅ ADMIN uniquement
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AppelOffre> createAppelOffre(@RequestBody AppelOffre appelOffre) {
@@ -40,7 +38,6 @@ public class AppelOffreController {
         }
     }
 
-    // ✅ ADMIN uniquement
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AppelOffre> updateAppelOffre(@PathVariable Long id, @RequestBody AppelOffre appelOffre) {
@@ -54,7 +51,6 @@ public class AppelOffreController {
         }
     }
 
-    // ✅ ADMIN uniquement
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteAppelOffre(@PathVariable Long id) {
@@ -66,30 +62,50 @@ public class AppelOffreController {
         }
     }
 
-    // ✅ USER uniquement - Postuler à un appel d'offre
+    // 🔥 CORRECTION PRINCIPALE : Méthode postuler corrigée
     @PostMapping("/{id}/postuler")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> postuler(@PathVariable Long id, Authentication authentication) {
         try {
-            // Récupérer l'utilisateur connecté depuis le contexte de sécurité
-            User currentUser = (User) authentication.getPrincipal();
-            appelOffreService.postuler(id, currentUser);
+            // 🔧 CORRECTION 1: Récupérer l'email depuis le token JWT
+            String userEmail = null;
+            
+            // Méthode 1: Si votre JWT contient directement l'email
+            userEmail = authentication.getName();
+            
+            // Méthode 2: Si vous avez un objet User personnalisé dans le principal
+            // User currentUser = (User) authentication.getPrincipal();
+            // userEmail = currentUser.getEmail();
+            
+            // Méthode 3: Si vous utilisez UserDetails
+            // UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            // userEmail = userDetails.getUsername(); // Si username = email
+            
+            System.out.println("🔍 Debug - Email récupéré: " + userEmail);
+            System.out.println("🔍 Debug - ID Appel d'offre: " + id);
+            System.out.println("🔍 Debug - Type principal: " + authentication.getPrincipal().getClass());
+            
+            // 🔧 CORRECTION 2: Appeler la bonne méthode du service
+            appelOffreService.postulerByEmail(id, userEmail);
+            
             return ResponseEntity.ok("Candidature enregistrée avec succès");
+            
         } catch (RuntimeException e) {
+            System.err.println("❌ Erreur RuntimeException: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erreur lors de la postulation");
+            System.err.println("❌ Erreur générale: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Erreur lors de la postulation: " + e.getMessage());
         }
     }
 
-    // ✅ Optionnel : Récupérer un appel d'offre par ID
     @GetMapping("/{id}")
     public ResponseEntity<AppelOffre> getAppelOffreById(@PathVariable Long id) {
         try {
-            // Vous devrez ajouter cette méthode dans votre service
-            // AppelOffre appelOffre = appelOffreService.getById(id);
-            // return ResponseEntity.ok(appelOffre);
-            return ResponseEntity.notFound().build(); // Temporaire
+            // Vous devrez ajouter cette méthode dans votre service si nécessaire
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
