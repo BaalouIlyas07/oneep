@@ -54,11 +54,20 @@ const Header = () => {
           <ul className="nav-links">
             <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Accueil</Link></li>
             <li><Link to="/appels-offres" onClick={() => setIsMenuOpen(false)}>Appels d'Offres</Link></li>
-            <li><Link to="/devenir-fournisseur" onClick={() => setIsMenuOpen(false)}>Devenir Fournisseur</Link></li>
           </ul>
           <div className="auth-buttons">
             {isLoggedIn ? (
               <>
+                {userRole === 'ADMIN' && (
+                  <Link to="/admin" className="btn btn-dashboard" onClick={() => setIsMenuOpen(false)}>
+                    Dashboard Admin
+                  </Link>
+                )}
+                {userRole === 'USER' && (
+                  <Link to="/user" className="btn btn-dashboard" onClick={() => setIsMenuOpen(false)}>
+                    Mon Dashboard
+                  </Link>
+                )}
                 <Link to="/profile" className="btn btn-profile" onClick={() => setIsMenuOpen(false)}>
                   Mon Profil
                 </Link>

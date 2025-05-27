@@ -133,6 +133,41 @@
     background-color: #c82333;
   }
   
+  .btn-dashboard {
+    background: linear-gradient(135deg, #4299e1 0%, #667eea 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(66, 153, 225, 0.2);
+  }
+
+  .btn-dashboard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(66, 153, 225, 0.3);
+    background: linear-gradient(135deg, #3182ce 0%, #5a67d8 100%);
+  }
+
+  .btn-dashboard::before {
+    content: '📊';
+    font-size: 1.1em;
+  }
+
+  @media (max-width: 768px) {
+    .btn-dashboard {
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+  }
+  
   @media (max-width: 992px) {
     .menu-toggle {
       display: block;

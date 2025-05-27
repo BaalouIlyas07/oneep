@@ -1,6 +1,7 @@
 package com.oneep.demo.controller;
 
 import com.oneep.demo.model.AppelOffre;
+import com.oneep.demo.model.Postulation;
 import com.oneep.demo.service.AppelOffreService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -122,5 +123,17 @@ public class AppelOffreController {
             return ResponseEntity.badRequest().body(false);
         }
     }
-  
+
+    // Nouvel endpoint pour récupérer les postulations de l'utilisateur connecté
+    @GetMapping("/postulations")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<Postulation>> getUserPostulations(Authentication authentication) {
+        try {
+            String userEmail = authentication.getName();
+            List<Postulation> postulations = appelOffreService.getPostulationsByUser(userEmail);
+            return ResponseEntity.ok(postulations);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

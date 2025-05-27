@@ -1,162 +1,251 @@
 .user-dashboard {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
 }
 
 h2 {
-  color: #333;
-  margin-bottom: 20px;
+  color: #2d3748;
+  margin-bottom: 2rem;
   text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(120deg, #2d3748, #4a5568);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 h3 {
-  color: #444;
-  margin-bottom: 15px;
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .dashboard-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 2rem;
 }
 
-.request-form-container, .requests-list-container {
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
-
-.request-form-container {
-  flex: 1;
-  min-width: 300px;
-}
-
-.requests-list-container {
-  flex: 2;
-  min-width: 400px;
-}
-
-.request-form {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  color: #555;
-  font-weight: bold;
-}
-
-.form-group input, .form-group textarea {
+.postulations-list-container {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  padding: 2rem;
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.submit-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  width: 100%;
-}
-
-.submit-button:hover {
-  background-color: #45a049;
-}
-
-.no-requests {
+.no-postulations {
   text-align: center;
-  color: #777;
-  padding: 20px;
-  background-color: white;
-  border-radius: 5px;
+  color: #718096;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 15px;
+  font-size: 1.1rem;
+  backdrop-filter: blur(5px);
 }
 
-.requests-list {
+.postulations-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.postulation-item {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.postulation-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #4299e1, #667eea);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.postulation-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.postulation-item:hover::before {
+  opacity: 1;
+}
+
+.postulation-item h4 {
+  margin: 0 0 1rem 0;
+  color: #2d3748;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.postulation-description {
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.postulation-details {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.request-item {
-  background-color: white;
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+.postulation-date {
+  color: #718096;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.request-item h4 {
-  margin-top: 0;
-  color: #333;
+.postulation-date::before {
+  content: '📅';
+  font-size: 1rem;
 }
 
-.request-status {
-  margin-top: 10px;
-  font-weight: bold;
+.postulation-status {
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.status-pending {
-  color: #ff9800;
+.status-en_attente {
+  background: rgba(255, 193, 7, 0.1);
+  color: #d97706;
 }
 
-.status-approved {
-  color: #4caf50;
+.status-en_attente::before {
+  content: '⏳';
 }
 
-.status-rejected {
-  color: #f44336;
+.status-acceptee {
+  background: rgba(72, 187, 120, 0.1);
+  color: #2f855a;
 }
 
-.request-response {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
+.status-acceptee::before {
+  content: '✅';
+}
+
+.status-refusee {
+  background: rgba(245, 101, 101, 0.1);
+  color: #c53030;
+}
+
+.status-refusee::before {
+  content: '❌';
+}
+
+.status-annulee {
+  background: rgba(160, 174, 192, 0.1);
+  color: #4a5568;
+}
+
+.status-annulee::before {
+  content: '🚫';
 }
 
 .error-message {
-  color: #f44336;
-  background-color: #ffebee;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  background: rgba(245, 101, 101, 0.1);
+  color: #c53030;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(245, 101, 101, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message::before {
+  content: '⚠️';
 }
 
 .success-message {
-  color: #4caf50;
-  background-color: #e8f5e9;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  background: rgba(72, 187, 120, 0.1);
+  color: #2f855a;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(72, 187, 120, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.success-message::before {
+  content: '✨';
 }
 
 .loading {
   text-align: center;
-  padding: 20px;
-  font-size: 18px;
-  color: #666;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading::after {
+  content: '⌛';
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
-  .dashboard-container {
-    flex-direction: column;
+  .user-dashboard {
+    padding: 1rem;
   }
-  
-  .request-form-container, .requests-list-container {
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .postulations-list {
+    grid-template-columns: 1fr;
+  }
+
+  .postulation-details {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .postulation-status {
     width: 100%;
+    justify-content: center;
   }
 }

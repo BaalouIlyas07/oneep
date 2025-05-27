@@ -85,9 +85,16 @@ public class AppelOffreService {
                           " a postulé à l'appel d'offre " + id + " (ID postulation: " + postulation.getId() + ")");
     }
 
-    // ✅ Nouvelle méthode pour récupérer les postulations d'un utilisateur
+    // Méthode pour récupérer les postulations d'un utilisateur avec toutes les informations nécessaires
+    @Transactional(readOnly = true)
     public List<Postulation> getPostulationsByUser(String userEmail) {
-        return postulationRepository.findAllByEmailUser(userEmail);
+        List<Postulation> postulations = postulationRepository.findAllByEmailUser(userEmail);
+        // Initialiser les relations lazy si nécessaire
+        postulations.forEach(postulation -> {
+            postulation.getAppelOffre().getTitre(); // Force l'initialisation de l'appel d'offre
+            postulation.getUser().getEmail(); // Force l'initialisation de l'utilisateur
+        });
+        return postulations;
     }
 
     // ✅ Nouvelle méthode pour récupérer les postulations d'un appel d'offre (ADMIN)
