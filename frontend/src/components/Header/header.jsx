@@ -38,8 +38,8 @@ const Header = () => {
           </Link>
           <div className="logo-text">
             <Link to="/" className="logo">
-            <h1>ONEEP </h1>
-          </Link>
+              <h1>ONEEP </h1>
+            </Link>
             <p>Office National de l'Électricité et de l'Eau Potable</p>
           </div>
         </div>
@@ -59,7 +59,7 @@ const Header = () => {
             {isLoggedIn ? (
               <>
                 {userRole === 'ADMIN' && (
-                  <Link to="/admin" className="btn btn-dashboard" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/admin-dashboard" className="btn btn-dashboard" onClick={() => setIsMenuOpen(false)}>
                     Dashboard Admin
                   </Link>
                 )}

@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './homePage.css';
 import ONEEPpImage from '../../imgs/oneep.jpg'; // Importez l'image
 
 const HomePage = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
   return (
     <div className="homepage">
       {/* Section Bannière */}
@@ -13,7 +20,9 @@ const HomePage = () => {
           <p>Votre partenaire pour l'énergie et l'eau au service du développement durable</p>
           <div className="hero-buttons">
             <Link to="/appels-offres" className="btn btn-primary">Appels d'Offres</Link>
-            <Link to="/devenir-fournisseur" className="btn btn-secondary">Devenir Fournisseur</Link>
+            {!isLoggedIn && (
+              <Link to="/register" className="btn btn-secondary">Devenir Fournisseur</Link>
+            )}
           </div>
         </div>
       </section>
@@ -128,7 +137,9 @@ const HomePage = () => {
               </p>
               <div className="suppliers-buttons">
                 <Link to="/appels-offres" className="btn">Consulter les Appels d'Offres</Link>
-                <Link to="/devenir-fournisseur" className="btn">Devenir Fournisseur</Link>
+                {!isLoggedIn && (
+                  <Link to="/register" className="btn">Devenir Fournisseur</Link>
+                )}
               </div>
             </div>
           </div>

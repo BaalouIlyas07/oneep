@@ -7,6 +7,7 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [expandedPostulations, setExpandedPostulations] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +16,15 @@ const UserDashboard = () => {
 
   const fetchPostulations = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
       const response = await fetch('http://localhost:8080/api/appels-offres/postulations', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -25,28 +34,42 @@ const UserDashboard = () => {
       if (response.ok) {
         const data = await response.json();
         setPostulations(data);
+        setSuccessMessage('Vos postulations ont été chargées avec succès');
+        setTimeout(() => setSuccessMessage(null), 3000);
       } else if (response.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         navigate('/login');
       } else {
-        setError('Failed to load postulations');
+        const errorData = await response.json();
+        setError(errorData.message || 'Erreur lors du chargement des postulations');
       }
     } catch (err) {
-      setError('Error connecting to server');
-      console.error(err);
+      setError('Erreur de connexion au serveur. Veuillez réessayer plus tard.');
+      console.error('Erreur:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleDetails = (postulationId) => {
+    setExpandedPostulations(prev => ({
+      ...prev,
+      [postulationId]: !prev[postulationId]
+    }));
+  };
+
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+      </div>
+    );
   }
 
   return (
     <div className="user-dashboard">
-      <h2>User Dashboard</h2>
+      <h2>Mon Dashboard</h2>
       
       {error && <div className="error-message">{error}</div>}
       {successMessage && <div className="success-message">{successMessage}</div>}
@@ -73,6 +96,31 @@ const UserDashboard = () => {
                       </span>
                     </div>
                   </div>
+                  <button 
+                    className="details-toggle-button"
+                    onClick={() => toggleDetails(postulation.id)}
+                  >
+                    {expandedPostulations[postulation.id] ? 'Masquer les détails' : 'Voir les détails'}
+                  </button>
+                  {expandedPostulations[postulation.id] && (
+                    <div className="appel-offre-details">
+                      <h5>Détails de l'appel d'offre</h5>
+                      <div className="details-grid">
+                        <div className="detail-item">
+                          <span className="detail-label">Date limite:</span>
+                          <span className="detail-value">{new Date(postulation.appelOffre.dateLimite).toLocaleDateString()}</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Montant estimatif:</span>
+                          <span className="detail-value">{postulation.appelOffre.montantEstimatif} €</span>
+                        </div>
+                        <div className="detail-item">
+                          <span className="detail-label">Site:</span>
+                          <span className="detail-value">{postulation.appelOffre.site}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

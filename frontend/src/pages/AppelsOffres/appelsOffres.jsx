@@ -239,14 +239,19 @@ const AppelsOffres = () => {
     );
   };
 
-  if (loading && appelsOffres.length === 0) return <div className="loading">Chargement en cours...</div>; // Afficher chargement initial
-  if (error && appelsOffres.length === 0) return <div className="error">{error}</div>; // Afficher erreur si rien n'est chargé
+  if (loading && appelsOffres.length === 0) {
+    return (
+      <div className="loading-spinner">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+  if (error && appelsOffres.length === 0) return <div className="error">{error}</div>;
 
   return (
     <div className="appels-offres-container">
       <div className="headerr">
         <h1>Appels d'Offres</h1>
-        {/* Le bouton "Ajouter" ne s'affiche que si l'utilisateur est ADMIN */}
         {userRole === 'ADMIN' && (
           <button onClick={() => { resetForm(); setCurrentAppel(null); setShowAddForm(true); }} className="btn-add">
             Ajouter un appel d'offre
@@ -254,11 +259,12 @@ const AppelsOffres = () => {
         )}
       </div>
 
-      {/* Afficher l'erreur au-dessus du tableau si elle survient après un chargement initial */}
       {error && <div className="error" style={{ marginBottom: '1rem' }}>{error}</div>}
-      {/* Afficher le chargement pour les actions CRUD */}
-      {loading && appelsOffres.length > 0 && <div className="loading-inline">Mise à jour...</div>}
-
+      {loading && appelsOffres.length > 0 && (
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+        </div>
+      )}
 
       <div className="appels-list">
         {appelsOffres.length === 0 && !loading ? (
@@ -273,7 +279,6 @@ const AppelsOffres = () => {
                 <th>Montant Estimatif</th>
                 <th>Date Lancement</th>
                 <th>Date Limite</th>
-                {/* La colonne Actions ne s'affiche que si un utilisateur est connecté */}
                 {userRole && <th>Actions</th>}
               </tr>
             </thead>
@@ -289,11 +294,10 @@ const AppelsOffres = () => {
                     {formatDate(appel.dateLimite)}
                     {isDateExpired(appel.dateLimite) && <span className="expired-text"> (Expiré)</span>}
                   </td>
-                  {/* Les actions ne sont rendues que si userRole est défini (utilisateur connecté) */}
                   {userRole && (
                     <td className="actions">
-                      {getActionButton(appel)} {/* Pour les USERs */}
-                      {userRole === 'ADMIN' && ( /* Pour les ADMINs */
+                      {getActionButton(appel)}
+                      {userRole === 'ADMIN' && (
                         <>
                           <button onClick={() => modifierAppelOffre(appel)} className="btn-edit">
                             Modifier
@@ -312,12 +316,11 @@ const AppelsOffres = () => {
         )}
       </div>
 
-      {(showAddForm || showEditForm) && userRole === 'ADMIN' && ( /* Le modal ne s'ouvre que pour l'admin */
+      {(showAddForm || showEditForm) && userRole === 'ADMIN' && (
         <div className="modal">
           <div className="modal-content">
             <h2>{currentAppel ? "Modifier l'appel d'offre" : "Ajouter un appel d'offre"}</h2>
             <form onSubmit={handleSubmit}>
-              {/* ... (contenu du formulaire inchangé) ... */}
               <div className="form-group">
                 <label>Site *</label>
                 <input type="text" name="site" value={formData.site} onChange={handleInputChange} required />
