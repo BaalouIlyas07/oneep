@@ -18,7 +18,8 @@ const AdminDashboard = () => {
     role: 'USER',
     password: 'password123'
   });
-  const [showRoleDropdown, setShowRoleDropdown] = useState(null); // État pour gérer le menu déroulant du rôle
+  const [showRoleDropdown, setShowRoleDropdown] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({});
 
   const navigate = (path) => {
     window.location.href = path;
@@ -161,8 +162,17 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleRoleChangeClick = (userId) => {
-    setShowRoleDropdown(showRoleDropdown === userId ? null : userId); // Ouvre/ferme le menu pour l'utilisateur
+  const handleRoleChangeClick = (userId, event) => {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const spaceBelow = windowHeight - rect.bottom;
+    const dropdownHeight = 100; // Hauteur approximative du dropdown
+
+    setDropdownPosition({
+      [userId]: spaceBelow < dropdownHeight ? 'up' : 'down'
+    });
+    setShowRoleDropdown(showRoleDropdown === userId ? null : userId);
   };
 
   const handleUpdateUserRole = async (userId, newRole) => {
@@ -499,21 +509,23 @@ const AdminDashboard = () => {
                             </span>
                             <div className="role-edit-container">
                               <button
-                                className="btn btn-sm btn-primary role-edit-button"
-                                onClick={() => handleRoleChangeClick(user.id)}
+                                className="role-edit-button"
+                                onClick={(e) => handleRoleChangeClick(user.id, e)}
                               >
                                 Modifier
                               </button>
                               {showRoleDropdown === user.id && (
-                                <div className="role-dropdown">
+                                <div className={`role-dropdown ${dropdownPosition[user.id] === 'up' ? 'dropup' : ''}`}>
                                   <button
                                     className="role-dropdown-item"
+                                    data-role="USER"
                                     onClick={() => handleUpdateUserRole(user.id, 'USER')}
                                   >
                                     Utilisateur
                                   </button>
                                   <button
                                     className="role-dropdown-item"
+                                    data-role="ADMIN"
                                     onClick={() => handleUpdateUserRole(user.id, 'ADMIN')}
                                   >
                                     Administrateur
@@ -529,13 +541,13 @@ const AdminDashboard = () => {
                           </td>
                           <td className="action-buttons">
                             <button
-                              className="btn btn-sm btn-warning me-1"
+                              className="action-btn action-btn-warning me-1"
                               onClick={() => handleToggleStatus(user.id, !user.active)}
                             >
                               {user.active ? 'Désactiver' : 'Activer'}
                             </button>
                             <button
-                              className="btn btn-sm btn-danger"
+                              className="action-btn action-btn-danger"
                               onClick={() => handleDeleteUser(user.id)}
                             >
                               Supprimer
@@ -610,13 +622,13 @@ const AdminDashboard = () => {
                             {postulation.statut === 'EN_ATTENTE' && (
                               <>
                                 <button
-                                  className="btn btn-sm btn-success me-1"
+                                  className="action-btn action-btn-success me-1"
                                   onClick={() => handleUpdatePostulationStatus(postulation.id, 'ACCEPTEE')}
                                 >
                                   Accepter
                                 </button>
                                 <button
-                                  className="btn btn-sm btn-warning me-1"
+                                  className="action-btn action-btn-warning me-1"
                                   onClick={() => handleUpdatePostulationStatus(postulation.id, 'REFUSEE')}
                                 >
                                   Rejeter
@@ -624,7 +636,7 @@ const AdminDashboard = () => {
                               </>
                             )}
                             <button
-                              className="btn btn-sm btn-danger"
+                              className="action-btn action-btn-danger"
                               onClick={() => handleDeletePostulation(postulation.id)}
                             >
                               Supprimer
