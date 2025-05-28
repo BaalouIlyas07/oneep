@@ -16,18 +16,39 @@ import lombok.NoArgsConstructor;
 public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Le prénom est obligatoire")
+    @NotBlank(message = "Le type de compte est obligatoire")
+    @Column(name = "account_type")
+    private String accountType;
+
+    // Fields for Individual
+    @Column(name = "cin")
+    private String cin;
+
     @Column(name = "first_name")
     private String firstName;
 
-    @NotBlank(message = "Le nom est obligatoire")
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "address")
+    private String address;
+
+    // Fields for Company
+    @Column(name = "company_name")
+    private String companyName;
+
+    @Column(name = "business_name")
+    private String businessName;
+
+    @Column(name = "trade_register_number")
+    private String tradeRegisterNumber;
+
+    // Common fields
     @NotBlank(message = "L'email est obligatoire")
     @Email(message = "Veuillez fournir un email valide")
     @Column(unique = true)

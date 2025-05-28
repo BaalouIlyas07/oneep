@@ -46,6 +46,33 @@
     color: #333;
   }
   
+  .account-type-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .account-type-button {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid #007bff;
+    background-color: white;
+    color: #007bff;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .account-type-button:hover {
+    background-color: #f0f7ff;
+  }
+  
+  .account-type-button.active {
+    background-color: #007bff;
+    color: white;
+  }
+  
   /* Style for the row with name and firstname */
   .form-row {
     display: flex;
@@ -121,5 +148,9 @@
     
     .form-row .form-group {
       margin-bottom: 1rem;
+    }
+
+    .account-type-buttons {
+      flex-direction: column;
     }
   }

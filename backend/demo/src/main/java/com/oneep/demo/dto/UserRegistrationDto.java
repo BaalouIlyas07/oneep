@@ -12,13 +12,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRegistrationDto {
+    @NotBlank(message = "Le type de compte est obligatoire")
+    private String accountType; // "INDIVIDUAL" or "COMPANY"
 
-    @NotBlank(message = "Le prénom est obligatoire")
+    // Fields for Individual
+    private String cin;
     private String firstName;
-
-    @NotBlank(message = "Le nom est obligatoire")
     private String lastName;
+    private String address;
 
+    // Fields for Company
+    private String companyName;
+    private String businessName;
+    private String tradeRegisterNumber;
+
+    // Common fields
     @NotBlank(message = "L'email est obligatoire")
     @Email(message = "Veuillez fournir un email valide")
     private String email;
@@ -28,6 +36,5 @@ public class UserRegistrationDto {
     private String password;
 
     private String phoneNumber;
-    
     private Role role;
 }
