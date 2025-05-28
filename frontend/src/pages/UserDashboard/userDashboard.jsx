@@ -112,7 +112,7 @@ const UserDashboard = () => {
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Montant estimatif:</span>
-                          <span className="detail-value">{postulation.appelOffre.montantEstimatif} €</span>
+                          <span className="detail-value">{postulation.appelOffre.montantEstimatif} DH</span>
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Site:</span>

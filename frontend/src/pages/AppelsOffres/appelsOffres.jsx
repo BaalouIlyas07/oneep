@@ -288,7 +288,7 @@ const AppelsOffres = () => {
                   <td>{appel.site || '-'}</td>
                   <td>{appel.numeroAO || '-'}</td>
                   <td>{appel.titre}</td>
-                  <td>{appel.montantEstimatif ? `${appel.montantEstimatif} €` : '-'}</td>
+                  <td>{appel.montantEstimatif ? `${appel.montantEstimatif} DH` : '-'}</td>
                   <td>{formatDate(appel.dateLancement)}</td>
                   <td className={isDateExpired(appel.dateLimite) ? 'expired-date-limite' : 'date-limite'}>
                     {formatDate(appel.dateLimite)}
@@ -338,7 +338,7 @@ const AppelsOffres = () => {
                 <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" />
               </div>
               <div className="form-group">
-                <label>Montant Estimatif (€)</label>
+                <label>Montant Estimatif (DH)</label>
                 <input type="number" name="montantEstimatif" value={formData.montantEstimatif} onChange={handleInputChange} min="0" step="0.01" />
               </div>
               <div className="form-group">

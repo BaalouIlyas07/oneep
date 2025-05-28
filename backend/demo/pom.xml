@@ -63,8 +63,6 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-        
-        <!-- Validation des emails (déjà inclus avec spring-boot-starter-validation) -->
 
         <!-- Base de données H2 pour les tests -->
         <dependency>
