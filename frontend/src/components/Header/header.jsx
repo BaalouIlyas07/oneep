@@ -68,6 +68,11 @@ const Header = () => {
                     Mon Dashboard
                   </Link>
                 )}
+                {userRole === 'SERVICE' && (
+                  <Link to="/servicedashboard" className="btn btn-dashboard" onClick={() => setIsMenuOpen(false)}>
+                    Mon Dashboard
+                  </Link>
+                )}
                 <Link to="/profile" className="btn btn-profile" onClick={() => setIsMenuOpen(false)}>
                   Mon Profil
                 </Link>

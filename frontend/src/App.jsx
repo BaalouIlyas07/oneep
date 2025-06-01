@@ -4,6 +4,7 @@ import Login from './pages/Login/login.jsx';
 import Register from './pages/Register/register.jsx';
 import UserDashboard from './pages/UserDashboard/userDashboard.jsx';
 import AdminDashboard from './pages/AdminDashboard/adminDashboard.jsx';
+import ServiceDashboard from './pages/ServiceDashboard/serviceDashboard.jsx';
 import Profile from './components/Profile/profile.jsx';
 import HomePage from './pages/HomePage/homePage.jsx';
 import Header from './components/Header/header.jsx';
@@ -83,6 +84,16 @@ const App = () => {
             <PrivateRoute role="ADMIN">
               <Layout>
                 <AdminDashboard />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/servicedashboard"
+          element={
+            <PrivateRoute role="SERVICE"> {/* Assurez-vous que 'SERVICE' est bien la chaîne de caractères stockée pour ce rôle */}
+              <Layout>
+                <ServiceDashboard />
               </Layout>
             </PrivateRoute>
           }
