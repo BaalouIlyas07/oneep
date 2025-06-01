@@ -23,7 +23,7 @@
   margin-bottom: 15px;
 }
 
-/* Tab Navigation */
+/* Tab Navigation - Peut être supprimé si plus utilisé */
 .tab-navigation {
   display: flex;
   justify-content: center;
@@ -102,6 +102,7 @@
   color: inherit;
   opacity: 0.7;
   cursor: pointer;
+  margin-left: auto;
   transition: opacity 0.2s ease;
 }
 
@@ -110,8 +111,7 @@
 }
 
 /* Sections */
-.users-section,
-.postulations-section {
+.users-section { /* .postulations-section a été enlevé de AdminDashboard */
   background: white;
   border-radius: 8px;
   padding: 20px;
@@ -207,7 +207,7 @@
 .form-group input:focus,
 .form-group select:focus {
   border-color: #3b82f6;
-  outline: none;
+  outline: none; /* Ou une outline personnalisée pour l'accessibilité */
 }
 
 .form-text {
@@ -241,7 +241,7 @@
 /* Tables */
 .table-responsive {
   border-radius: 8px;
-  overflow: visible;
+  overflow: auto; /* Permet le scroll si la table est trop large */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
@@ -262,6 +262,7 @@
   text-align: left;
   font-weight: 500;
   font-size: 0.85rem;
+  white-space: nowrap; /* Empêche le texte des entêtes de passer à la ligne */
 }
 
 .data-table tbody tr {
@@ -307,6 +308,8 @@
   color: #991b1b;
 }
 
+/* Les badges de statut de postulation ne sont pas utilisés ici */
+/*
 .status-pending {
   background: #fef3c7;
   color: #92400e;
@@ -326,6 +329,7 @@
   background: #e5e7eb;
   color: #374151;
 }
+*/
 
 /* Role Badges */
 .role-badge {
@@ -335,20 +339,26 @@
   font-weight: 500;
   text-transform: uppercase;
   display: inline-block;
-  margin-right: 6px;
+  /* margin-right: 6px; Supprimé si c'est le seul élément dans la cellule TD */
 }
 
 .role-user {
-  background: #bfdbfe;
-  color: #1e40af;
+  background: #bfdbfe; 
+  color: #1e40af;    
 }
 
 .role-admin {
-  background: #facc15;
-  color: #713f12;
+  background: #facc15; 
+  color: #713f12;    
 }
 
-/* Role Edit Button and Dropdown */
+.role-service {
+  background: #ede9fe; 
+  color: #5b21b6;    
+}
+
+/* Role Edit Button and Dropdown - Non utilisés dans AdminDashboard.jsx pour modifier le rôle */
+/* Conserver si utilisé ailleurs ou pour une future réutilisation */
 .role-edit-container {
   position: relative;
   display: inline-block;
@@ -444,11 +454,16 @@
   background-color: #f59e0b;
 }
 
+.role-dropdown-item[data-role="SERVICE"]::before { /* Ajout pour cohérence si dropdown est réutilisé */
+  background-color: #6366f1; /* Exemple: Tailwind indigo-500 */
+}
+
+
 /* Action Buttons */
 .action-buttons {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* Permet aux boutons de passer à la ligne sur petits écrans */
 }
 
 .action-btn {
@@ -467,7 +482,6 @@
   background: #4f46e5;
   color: white;
 }
-
 .action-btn-primary:hover {
   background: #4338ca;
   transform: translateY(-1px);
@@ -477,7 +491,6 @@
   background: #059669;
   color: white;
 }
-
 .action-btn-success:hover {
   background: #047857;
   transform: translateY(-1px);
@@ -487,7 +500,6 @@
   background: #d97706;
   color: white;
 }
-
 .action-btn-warning:hover {
   background: #b45309;
   transform: translateY(-1px);
@@ -497,14 +509,13 @@
   background: #dc2626;
   color: white;
 }
-
 .action-btn-danger:hover {
   background: #b91c1c;
   transform: translateY(-1px);
 }
 
 .me-1 {
-  margin-right: 6px;
+  margin-right: 6px !important; /* S'assurer que ça s'applique */
 }
 
 /* Loading Animation */
@@ -548,11 +559,11 @@
 
 @media (max-width: 992px) {
   .form-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Les champs du formulaire passent en une seule colonne */
   }
 
   .section-header {
-    flex-direction: column;
+    flex-direction: column; /* Le titre et le bouton d'ajout passent en colonne */
     gap: 10px;
     align-items: flex-start;
   }
@@ -578,22 +589,26 @@
   }
 
   .action-buttons {
-    flex-direction: column;
-    align-items: stretch;
-    font-weight: 100;
+    flex-direction: column; /* Les boutons d'action dans la table passent en colonne */
+    align-items: stretch; 
   }
 
-  .action-buttons .btn {
+  .action-buttons .action-btn { /* S'assurer que les boutons prennent toute la largeur */
     width: 100%;
+    margin-bottom: 4px; /* Ajouter un petit espace entre les boutons en colonne */
+  }
+   .action-buttons .action-btn.me-1 {
+    margin-right: 0 !important; /* Annuler la marge à droite en mode colonne */
   }
 
-  .role-edit-container {
+
+  .role-edit-container { /* Si jamais réutilisé */
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .role-dropdown {
+  .role-dropdown { /* Si jamais réutilisé */
     left: auto;
     right: 0;
   }
@@ -604,8 +619,7 @@
     padding: 10px;
   }
 
-  .users-section,
-  .postulations-section {
+  .users-section {
     padding: 15px;
   }
 
@@ -613,8 +627,14 @@
     padding: 15px;
   }
 
-  .data-table {
-    min-width: 600px;
+  .data-table { /* Assurer que la table est scrollable horizontalement si nécessaire */
+    display: block; /* Nécessaire pour que overflow-x fonctionne sur la table elle-même */
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Pour un scroll fluide sur iOS */
+  }
+  .data-table th, .data-table td {
+     white-space: nowrap; /* Empêcher le texte de passer à la ligne dans les cellules */
   }
 }
 
@@ -652,16 +672,25 @@
   }
 }
 
-/* Accessibility Enhancements */
-button:focus,
-input:focus,
-select:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 1px;
-  border-radius: 20%;
+/* Accessibility Enhancements (optionnel mais recommandé) */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 3px solid #2563eb; /* Bleu plus visible */
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4); /* Ombre douce pour le focus */
+}
+/* Retirer l'outline par défaut si :focus-visible est supporté et utilisé */
+button:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
 }
 
-/* Tooltip Styles */
+
+/* Tooltip Styles (si vous en utilisez) */
 .tooltip {
   position: relative;
 }

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from "react"; // Ajout de useCallback
+import React, { useEffect, useState, useCallback } from "react";
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // useNavigate est conservé au cas où il serait utilisé ailleurs, mais pas pour la redirection ici
+import { useNavigate } from 'react-router-dom';
 import './appelsOffres.css';
 
 const AppelsOffres = () => {
@@ -22,13 +22,11 @@ const AppelsOffres = () => {
     numeroAO: ''
   });
 
-  const navigate = useNavigate(); // Conservé, mais la redirection conditionnelle est enlevée de useEffect
+  const navigate = useNavigate();
 
-  // Nouvelle fonction pour vérifier les postulations de l'utilisateur, encapsulée dans useCallback
   const checkUserApplications = useCallback(async (appels) => {
     try {
       const token = localStorage.getItem('token');
-      // Si pas de token (utilisateur non connecté), ne rien faire ou vider les postulations
       if (!token) {
         setUserApplications({});
         return;
@@ -50,11 +48,10 @@ const AppelsOffres = () => {
       setUserApplications(applications);
     } catch (error) {
       console.error('Erreur lors de la vérification des postulations:', error);
-      setUserApplications({}); // En cas d'erreur générale, vider les postulations
+      setUserApplications({});
     }
-  }, []); // setUserApplications est stable, donc pas de dépendance nécessaire ici
+  }, []);
 
-  // Encapsulation de fetchAppelsOffres dans useCallback
   const fetchAppelsOffres = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -68,8 +65,6 @@ const AppelsOffres = () => {
       if (token && roleFromStorage === 'USER') {
         await checkUserApplications(response.data);
       } else {
-        // Si l'utilisateur n'est pas connecté ou n'est pas 'USER',
-        // s'assurer que userApplications est vide.
         setUserApplications({});
       }
     } catch (error) {
@@ -78,9 +73,8 @@ const AppelsOffres = () => {
     } finally {
       setLoading(false);
     }
-  }, [checkUserApplications]); // Dépend de checkUserApplications
+  }, [checkUserApplications]);
 
-  // Vérifier l'authentification et charger les données
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
@@ -88,14 +82,10 @@ const AppelsOffres = () => {
     if (token && role) {
       setUserRole(role);
     } else {
-      // Si pas de token/rôle, l'utilisateur n'est pas connecté.
-      // userRole reste null (ou est explicitement mis à null).
       setUserRole(null);
     }
     fetchAppelsOffres();
-    // La redirection navigate('/login') est supprimée.
-    // Les appels d'offres seront affichés même sans connexion.
-  }, [fetchAppelsOffres]); // fetchAppelsOffres est maintenant une dépendance
+  }, [fetchAppelsOffres]);
 
 
   const formatDate = (dateString) => {
@@ -129,12 +119,17 @@ const AppelsOffres = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null); // Réinitialiser l'erreur avant la soumission
+    setError(null);
     try {
       const token = localStorage.getItem('token');
-      // Si pas de token, l'utilisateur ne devrait pas pouvoir soumettre (boutons masqués)
       if (!token) {
         setError("Action non autorisée. Veuillez vous connecter.");
+        setLoading(false);
+        return;
+      }
+      // Assurez-vous que l'utilisateur a le rôle SERVICE pour ces actions
+      if (userRole !== 'SERVICE') {
+        setError("Action non autorisée pour votre rôle.");
         setLoading(false);
         return;
       }
@@ -144,10 +139,11 @@ const AppelsOffres = () => {
       } else {
         await axios.post('http://localhost:8080/api/appels-offres', formData, config);
       }
-      await fetchAppelsOffres(); // Recharger les données
+      await fetchAppelsOffres();
       resetForm();
       setShowAddForm(false);
       setShowEditForm(false);
+      setCurrentAppel(null);
     } catch (error) {
       setError(error.response?.data?.message || "Erreur lors de l'enregistrement");
       console.error("Erreur handleSubmit:", error);
@@ -168,6 +164,7 @@ const AppelsOffres = () => {
       numeroAO: appel.numeroAO || ''
     });
     setShowEditForm(true);
+    setShowAddForm(false); // S'assurer que le formulaire d'ajout est fermé
   };
 
   const supprimerAppelOffre = async (id) => {
@@ -181,13 +178,16 @@ const AppelsOffres = () => {
           setLoading(false);
           return;
         }
+        // Assurez-vous que l'utilisateur a le rôle SERVICE pour ces actions
+        if (userRole !== 'SERVICE') {
+            setError("Action non autorisée pour votre rôle.");
+            setLoading(false);
+            return;
+        }
         await axios.delete(`http://localhost:8080/api/appels-offres/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        // Mettre à jour l'état local après suppression
         setAppelsOffres(prevAppelsOffres => prevAppelsOffres.filter(a => a.id !== id));
-        // Alternativement, appeler fetchAppelsOffres() pour recharger depuis le serveur :
-        // await fetchAppelsOffres();
       } catch (error) {
         setError(error.response?.data?.message || "Erreur lors de la suppression");
         console.error("Erreur supprimerAppelOffre:", error);
@@ -205,6 +205,14 @@ const AppelsOffres = () => {
       if (!token) {
         setError("Action non autorisée. Veuillez vous connecter pour postuler.");
         setLoading(false);
+        // Optionnel: rediriger vers login
+        // navigate('/login');
+        return;
+      }
+      // Seul le rôle USER peut postuler
+      if (userRole !== 'USER') {
+        setError("Seuls les utilisateurs peuvent postuler.");
+        setLoading(false);
         return;
       }
       await axios.post(
@@ -215,7 +223,7 @@ const AppelsOffres = () => {
       setUserApplications(prev => ({ ...prev, [id]: true }));
       alert("Votre candidature a été enregistrée avec succès !");
     } catch (error) {
-      setError(error.response?.data?.message || "Erreur lors de la postulation");
+      setError(error.response?.data?.message || error.message || "Erreur lors de la postulation");
       console.error("Erreur postuler:", error);
     } finally {
       setLoading(false);
@@ -223,7 +231,6 @@ const AppelsOffres = () => {
   };
 
   const getActionButton = (appel) => {
-    // Si userRole n'est pas 'USER' (inclut null pour non connecté), ne rien afficher
     if (userRole !== 'USER') return null;
 
     if (isDateExpired(appel.dateLimite)) {
@@ -233,8 +240,8 @@ const AppelsOffres = () => {
       return <span className="btn-applied">Déjà postulé</span>;
     }
     return (
-      <button onClick={() => postuler(appel.id)} className="btn-postuler">
-        Postuler
+      <button onClick={() => postuler(appel.id)} className="btn-postuler" disabled={loading}>
+        {loading ? '...' : 'Postuler'}
       </button>
     );
   };
@@ -246,24 +253,24 @@ const AppelsOffres = () => {
       </div>
     );
   }
-  if (error && appelsOffres.length === 0) return <div className="error">{error}</div>;
+  // Affiche l'erreur seulement si la liste est vide, sinon l'erreur s'affiche au-dessus de la liste.
+  if (error && appelsOffres.length === 0 && !loading) return <div className="error">{error}</div>;
 
   return (
     <div className="appels-offres-container">
       <div className="headerr">
         <h1>Appels d'Offres</h1>
-        {userRole === 'ADMIN' && (
-          <button onClick={() => { resetForm(); setCurrentAppel(null); setShowAddForm(true); }} className="btn-add">
+        {/* MODIFIÉ ICI: userRole === 'SERVICE' au lieu de 'ADMIN' */}
+        {userRole === 'SERVICE' && (
+          <button onClick={() => { resetForm(); setCurrentAppel(null); setShowAddForm(true); setShowEditForm(false);}} className="btn-add">
             Ajouter un appel d'offre
           </button>
         )}
       </div>
 
-      {error && <div className="error" style={{ marginBottom: '1rem' }}>{error}</div>}
-      {loading && appelsOffres.length > 0 && (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-        </div>
+      {error && <div className="error-message-inline" style={{ marginBottom: '1rem', color: 'red', textAlign:'center' }}>{error}</div>}
+      {loading && appelsOffres.length > 0 && ( // Afficher le spinner de chargement même si des données sont déjà là
+        <div className="loading-indicator-inline">Chargement en cours...</div>
       )}
 
       <div className="appels-list">
@@ -279,6 +286,7 @@ const AppelsOffres = () => {
                 <th>Montant Estimatif</th>
                 <th>Date Lancement</th>
                 <th>Date Limite</th>
+                {/* La colonne Actions ne s'affiche que si un utilisateur est connecté (USER ou SERVICE) */}
                 {userRole && <th>Actions</th>}
               </tr>
             </thead>
@@ -288,21 +296,26 @@ const AppelsOffres = () => {
                   <td>{appel.site || '-'}</td>
                   <td>{appel.numeroAO || '-'}</td>
                   <td>{appel.titre}</td>
-                  <td>{appel.montantEstimatif ? `${appel.montantEstimatif} DH` : '-'}</td>
+                  <td>{appel.montantEstimatif ? `${Number(appel.montantEstimatif).toLocaleString('fr-MA')} DH` : '-'}</td>
                   <td>{formatDate(appel.dateLancement)}</td>
                   <td className={isDateExpired(appel.dateLimite) ? 'expired-date-limite' : 'date-limite'}>
                     {formatDate(appel.dateLimite)}
                     {isDateExpired(appel.dateLimite) && <span className="expired-text"> (Expiré)</span>}
                   </td>
+                  {/* La colonne Actions ne s'affiche que si un utilisateur est connecté */}
                   {userRole && (
                     <td className="actions">
+                      {/* Bouton Postuler pour USER */}
                       {getActionButton(appel)}
-                      {userRole === 'ADMIN' && (
+
+                      {/* Boutons Modifier/Supprimer pour SERVICE */}
+                      {/* MODIFIÉ ICI: userRole === 'SERVICE' au lieu de 'ADMIN' */}
+                      {userRole === 'SERVICE' && (
                         <>
-                          <button onClick={() => modifierAppelOffre(appel)} className="btn-edit">
+                          <button onClick={() => modifierAppelOffre(appel)} className="btn-edit" disabled={loading}>
                             Modifier
                           </button>
-                          <button onClick={() => supprimerAppelOffre(appel.id)} className="btn-delete">
+                          <button onClick={() => supprimerAppelOffre(appel.id)} className="btn-delete" disabled={loading}>
                             Supprimer
                           </button>
                         </>
@@ -316,7 +329,9 @@ const AppelsOffres = () => {
         )}
       </div>
 
-      {(showAddForm || showEditForm) && userRole === 'ADMIN' && (
+      {/* Modal pour Ajouter/Modifier, s'affiche seulement si userRole est SERVICE */}
+      {/* MODIFIÉ ICI: userRole === 'SERVICE' au lieu de 'ADMIN' */}
+      {(showAddForm || showEditForm) && userRole === 'SERVICE' && (
         <div className="modal">
           <div className="modal-content">
             <h2>{currentAppel ? "Modifier l'appel d'offre" : "Ajouter un appel d'offre"}</h2>

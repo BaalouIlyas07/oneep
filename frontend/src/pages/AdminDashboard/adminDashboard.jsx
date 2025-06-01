@@ -15,27 +15,36 @@ const AdminDashboard = () => {
     role: 'USER',
     password: 'password123' // Mot de passe par défaut
   });
-  const [showRoleDropdown, setShowRoleDropdown] = useState(null); // Pour le dropdown de rôle
-  const [dropdownPosition, setDropdownPosition] = useState({});
+  // Les états pour le dropdown de rôle ont été supprimés
 
-
-  const navigate = (path) => {
-    window.location.href = path;
-  };
+  // const navigate = (path) => { // window.location.href peut être utilisé directement si pas de react-router-dom navigate
+  //   window.location.href = path;
+  // };
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token && window.location.pathname === '/admin') {
+        setLoading(false);
+        setError("Veuillez vous connecter en tant qu'administrateur pour gérer les utilisateurs.");
+        // Les actions nécessitant un token échoueront si l'utilisateur n'est pas connecté.
+        // La liste des utilisateurs ne se chargera pas.
+        return; 
+    }
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError("Authentification requise pour voir la liste des utilisateurs.");
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
       const response = await fetch('http://localhost:8080/api/admin/users', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -46,16 +55,20 @@ const AdminDashboard = () => {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
-      } else if (response.status === 401 || response.status === 403) { // Ajout du 403
+      } else if (response.status === 401 || response.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        navigate('/login');
+        setError("Votre session a expiré ou vous n'avez pas les droits. Veuillez vous reconnecter.");
+        setUsers([]); 
+        // Si vous voulez forcer la déconnexion même sur une page publique :
+        // if (window.location.pathname !== '/login') window.location.href = '/login';
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Échec du chargement des utilisateurs');
       }
     } catch (err) {
       setError(err.message || 'Erreur de connexion au serveur');
+      setUsers([]);
       console.error('Erreur fetchUsers:', err);
     } finally {
       setLoading(false);
@@ -82,6 +95,12 @@ const AdminDashboard = () => {
 
   const handleAddUser = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setError("Veuillez vous connecter en tant qu'administrateur pour ajouter un utilisateur.");
+        return;
+    }
+
     if (!newUser.firstName || !newUser.lastName || !newUser.email) {
       setError('Tous les champs sont obligatoires pour ajouter un utilisateur.');
       setTimeout(() => setError(''), 5000);
@@ -99,22 +118,18 @@ const AdminDashboard = () => {
     setSuccessMessage('');
 
     try {
-      const token = localStorage.getItem('token');
-      // L'API pour ajouter un utilisateur est généralement /api/auth/register ou similaire,
-      // et peut ne pas nécessiter le rôle ADMIN si c'est un endpoint public de création de compte.
-      // Si c'est une création par l'admin, l'endpoint pourrait être /api/admin/users
-      // Adapter l'URL si nécessaire. Pour l'exemple, on garde /api/auth/register
-      const response = await fetch('http://localhost:8080/api/auth/register', {
+      // S'assurer que cet endpoint est sécurisé et prévu pour la création par un admin
+      const response = await fetch('http://localhost:8080/api/admin/users/add', { 
         method: 'POST',
         headers: {
-          // 'Authorization': `Bearer ${token}`, // Peut être nécessaire ou non selon la config de /register
+          'Authorization': `Bearer ${token}`, 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           firstName: newUser.firstName.trim(),
           lastName: newUser.lastName.trim(),
           email: newUser.email.trim().toLowerCase(),
-          password: newUser.password, // Le backend devrait hasher ça
+          password: newUser.password,
           role: newUser.role 
         }),
       });
@@ -124,18 +139,16 @@ const AdminDashboard = () => {
         throw new Error(errorData.message || 'Erreur lors de l\'ajout de l\'utilisateur');
       }
       
-      // Si l'API register retourne l'utilisateur créé :
-      const createdUser = await response.json(); // Supposons que l'API retourne l'utilisateur créé avec son ID
+      const createdUser = await response.json(); 
       
       setSuccessMessage('Utilisateur ajouté avec succès.');
       resetForm();
       setShowAddUserForm(false);
-      // Mettre à jour la liste des utilisateurs SANS refetch si l'utilisateur créé est retourné
-      // Sinon, il faudrait appeler fetchUsers()
       if (createdUser && createdUser.id) {
-        setUsers(prevUsers => [...prevUsers, { ...createdUser, active: true }]); // Assumant que l'API retourne l'utilisateur
+        // Assurer que `active` a une valeur par défaut si non retourné par l'API
+        setUsers(prevUsers => [...prevUsers, { ...createdUser, active: createdUser.active !== undefined ? createdUser.active : true }]);
       } else {
-        fetchUsers(); // Fallback si l'utilisateur créé n'est pas retourné
+        fetchUsers(); 
       }
       
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -148,67 +161,18 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleRoleChangeClick = (userId, event) => {
-    const button = event.currentTarget;
-    const rect = button.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    const spaceBelow = windowHeight - rect.bottom;
-    const dropdownHeight = 100; 
-
-    setDropdownPosition({
-      [userId]: spaceBelow < dropdownHeight ? 'up' : 'down'
-    });
-    setShowRoleDropdown(showRoleDropdown === userId ? null : userId);
-  };
-  
-  const handleUpdateUserRole = async (userId, newRole) => {
-    try {
-      setError('');
-      setSuccessMessage('');
-      const token = localStorage.getItem('token');
-      const userToUpdate = users.find(u => u.id === userId);
-      if (!userToUpdate) {
-        throw new Error("Utilisateur non trouvé pour la mise à jour.");
-      }
-
-      // L'API PUT sur /api/admin/users/{id} devrait prendre tout l'objet utilisateur ou juste les champs à modifier.
-      // Ici, on envoie un objet avec le rôle mis à jour.
-      // Assurez-vous que votre backend s'attend à cela.
-      const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/role`, { // Supposons un endpoint dédié pour le rôle
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ role: newRole }) // Envoyez uniquement le rôle, ou l'objet User complet si nécessaire
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la mise à jour du rôle');
-      }
-
-      setUsers(users.map(user =>
-        user.id === userId ? { ...user, role: newRole } : user
-      ));
-      setSuccessMessage('Rôle mis à jour avec succès');
-      setShowRoleDropdown(null);
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      setError(error.message || 'Erreur lors de la mise à jour du rôle');
-      console.error('Erreur updateUserRole:', error);
-      setTimeout(() => setError(''), 5000);
-    }
-  };
-
   const handleDeleteUser = async (userId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setError("Veuillez vous connecter en tant qu'administrateur pour supprimer un utilisateur.");
+        return;
+    }
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
       return;
     }
     try {
       setError('');
       setSuccessMessage('');
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
@@ -233,10 +197,14 @@ const AdminDashboard = () => {
   };
 
   const handleToggleStatus = async (userId, active) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setError("Veuillez vous connecter en tant qu'administrateur pour modifier le statut.");
+        return;
+    }
     try {
       setError('');
       setSuccessMessage('');
-      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8080/api/admin/users/${userId}/status?active=${active}`, {
         method: 'PUT',
         headers: {
@@ -262,11 +230,14 @@ const AdminDashboard = () => {
     }
   };
 
+  const currentToken = localStorage.getItem('token');
+  const currentRole = localStorage.getItem('role');
+  const isAdmin = currentToken && currentRole === 'ADMIN';
+
   return (
     <div className="admin-dashboard container">
       <div className="admin-header">
         <h2>Tableau de bord Administrateur</h2>
-        {/* La navigation par onglets n'est plus nécessaire s'il ne reste que la gestion des utilisateurs */}
       </div>
 
       <div className="messages-container">
@@ -295,26 +266,27 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Section Utilisateurs toujours visible */}
+      
       <div className="users-section">
         <div className="section-header">
           <h3>Gestion des utilisateurs</h3>
-          <button
-            className="add-user-button"
-            onClick={() => {
-              setShowAddUserForm(!showAddUserForm);
-              setError(''); // Clear error when toggling form
-              if (!showAddUserForm) { // If opening form
-                resetForm();
-              }
-            }}
-          >
-            {showAddUserForm ? 'Annuler l\'ajout' : 'Ajouter un utilisateur'}
-          </button>
+          {isAdmin && (
+            <button
+                className="add-user-button"
+                onClick={() => {
+                setShowAddUserForm(!showAddUserForm);
+                setError(''); 
+                if (!showAddUserForm) { 
+                    resetForm();
+                }
+                }}
+            >
+                {showAddUserForm ? 'Annuler l\'ajout' : 'Ajouter un utilisateur'}
+            </button>
+          )}
         </div>
 
-        {showAddUserForm && (
+        {isAdmin && showAddUserForm && (
           <div className="add-user-form-container">
             <h4>Ajouter un nouvel utilisateur</h4>
             <form onSubmit={handleAddUser} className="add-user-form">
@@ -337,7 +309,7 @@ const AdminDashboard = () => {
                 <select id="role" name="role" value={newUser.role} onChange={handleInputChange}>
                   <option value="USER">Utilisateur</option>
                   <option value="ADMIN">Administrateur</option>
-                  <option value="SERVICE">Service</option> {/* Ajout du rôle SERVICE */}
+                  <option value="SERVICE">Service</option>
                 </select>
               </div>
                <div className="form-group">
@@ -367,7 +339,7 @@ const AdminDashboard = () => {
         <div className="users-list-container">
           {loading ? (
             <div className="loading">Chargement des utilisateurs...</div>
-          ) : (
+          ) : users.length > 0 ? ( 
             <div className="table-responsive">
               <table className="data-table">
                 <thead>
@@ -377,62 +349,48 @@ const AdminDashboard = () => {
                     <th>Email</th>
                     <th>Rôle</th>
                     <th>Statut</th>
-                    <th>Actions</th>
+                    {isAdmin && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {users && users.length > 0 ? (
-                    users.map(user => (
-                      <tr key={user.id}>
-                        <td>{user.id}</td>
-                        <td>{user.firstName} {user.lastName}</td>
-                        <td>{user.email}</td>
-                        <td>
-                          <span className={`role-badge ${user.role === 'ADMIN' ? 'role-admin' : (user.role === 'SERVICE' ? 'role-service' : 'role-user')}`}>
-                            {user.role === 'ADMIN' ? 'Administrateur' : (user.role === 'SERVICE' ? 'Service' : 'Utilisateur')}
-                          </span>
-                          <div className="role-edit-container">
-                            <button className="role-edit-button" onClick={(e) => handleRoleChangeClick(user.id, e)}>
-                              Modifier
-                            </button>
-                            {showRoleDropdown === user.id && (
-                              <div className={`role-dropdown ${dropdownPosition[user.id] === 'up' ? 'dropup' : ''}`}>
-                                <button className="role-dropdown-item" data-role="USER" onClick={() => handleUpdateUserRole(user.id, 'USER')}>Utilisateur</button>
-                                <button className="role-dropdown-item" data-role="ADMIN" onClick={() => handleUpdateUserRole(user.id, 'ADMIN')}>Administrateur</button>
-                                <button className="role-dropdown-item" data-role="SERVICE" onClick={() => handleUpdateUserRole(user.id, 'SERVICE')}>Service</button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${user.active ? 'status-active' : 'status-inactive'}`}>
-                            {user.active ? 'Actif' : 'Inactif'}
-                          </span>
-                        </td>
+                  {users.map(user => (
+                    <tr key={user.id}>
+                      <td>{user.id}</td>
+                      <td>{user.firstName} {user.lastName}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        <span className={`role-badge ${user.role === 'ADMIN' ? 'role-admin' : (user.role === 'SERVICE' ? 'role-service' : 'role-user')}`}>
+                          {user.role === 'ADMIN' ? 'Administrateur' : (user.role === 'SERVICE' ? 'Service' : 'Utilisateur')}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`status-badge ${user.active ? 'status-active' : 'status-inactive'}`}>
+                          {user.active ? 'Actif' : 'Inactif'}
+                        </span>
+                      </td>
+                      {isAdmin && ( 
                         <td className="action-buttons">
-                          <button
+                            <button
                             className="action-btn action-btn-warning me-1"
                             onClick={() => handleToggleStatus(user.id, !user.active)}
-                          >
+                            >
                             {user.active ? 'Désactiver' : 'Activer'}
-                          </button>
-                          <button
+                            </button>
+                            <button
                             className="action-btn action-btn-danger"
                             onClick={() => handleDeleteUser(user.id)}
-                          >
+                            >
                             Supprimer
-                          </button>
+                            </button>
                         </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="no-data">Aucun utilisateur trouvé</td>
+                      )}
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
+          ) : (
+             !loading && !error && <div className="no-data">Aucun utilisateur trouvé.</div>
           )}
         </div>
       </div>
