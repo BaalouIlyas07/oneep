@@ -164,20 +164,18 @@ const AdminDashboard = () => {
   const handleDeleteUser = async (userId) => {
     const token = localStorage.getItem('token');
     if (!token) {
-        setError("Veuillez vous connecter en tant qu'administrateur pour supprimer un utilisateur.");
-        return;
-    }
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+      setError('Vous devez être connecté en tant qu\'administrateur');
       return;
     }
+
     try {
-      setError('');
-      setSuccessMessage('');
+      const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action supprimera également toutes ses postulations et ne peut pas être annulée.');
+      if (!confirmed) return;
+
       const response = await fetch(`http://localhost:8080/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -186,13 +184,12 @@ const AdminDashboard = () => {
         throw new Error(errorData.message || 'Erreur lors de la suppression de l\'utilisateur');
       }
 
-      setUsers(users.filter(user => user.id !== userId));
       setSuccessMessage('Utilisateur supprimé avec succès');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      // Rafraîchir la liste des utilisateurs
+      fetchUsers();
     } catch (error) {
-      setError(error.message || 'Erreur lors de la suppression de l\'utilisateur');
-      console.error('Erreur deleteUser:', error);
-      setTimeout(() => setError(''), 5000);
+      console.error('Erreur lors de la suppression:', error);
+      setError(error.message || 'Une erreur est survenue lors de la suppression de l\'utilisateur');
     }
   };
 
@@ -218,13 +215,16 @@ const AdminDashboard = () => {
         throw new Error(errorData.message || 'Erreur lors de la mise à jour du statut');
       }
 
+      // Mise à jour optimiste de l'interface
       setUsers(users.map(user =>
         user.id === userId ? { ...user, active } : user
       ));
       setSuccessMessage(`Utilisateur ${active ? 'activé' : 'désactivé'} avec succès`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      setError(error.message || 'Erreur lors de la mise à jour du statut');
+      // En cas d'erreur, on recharge la liste des utilisateurs pour avoir l'état correct
+      fetchUsers();
+      setError(error.message || 'Erreur lors de la mise à jour du statut. Veuillez réessayer.');
       console.error('Erreur toggleStatus:', error);
       setTimeout(() => setError(''), 5000);
     }

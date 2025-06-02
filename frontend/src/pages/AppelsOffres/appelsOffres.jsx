@@ -12,6 +12,7 @@ const AppelsOffres = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userApplications, setUserApplications] = useState({});
+  const [selectedAppel, setSelectedAppel] = useState(null);
   const [formData, setFormData] = useState({
     titre: '',
     description: '',
@@ -205,11 +206,8 @@ const AppelsOffres = () => {
       if (!token) {
         setError("Action non autorisée. Veuillez vous connecter pour postuler.");
         setLoading(false);
-        // Optionnel: rediriger vers login
-        // navigate('/login');
         return;
       }
-      // Seul le rôle USER peut postuler
       if (userRole !== 'USER') {
         setError("Seuls les utilisateurs peuvent postuler.");
         setLoading(false);
@@ -222,12 +220,21 @@ const AppelsOffres = () => {
       );
       setUserApplications(prev => ({ ...prev, [id]: true }));
       alert("Votre candidature a été enregistrée avec succès !");
+      handleCloseDetails(); // Fermer la modal après une postulation réussie
     } catch (error) {
       setError(error.response?.data?.message || error.message || "Erreur lors de la postulation");
       console.error("Erreur postuler:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetails = (appel) => {
+    setSelectedAppel(appel);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedAppel(null);
   };
 
   const getActionButton = (appel) => {
@@ -237,11 +244,18 @@ const AppelsOffres = () => {
       return <span className="btn-expired">Expiré</span>;
     }
     if (userApplications[appel.id]) {
-      return <span className="btn-applied">Déjà postulé</span>;
+      return (
+        <div className="applied-actions">
+          <span className="btn-applied">Déjà postulé</span>
+          <button onClick={() => handleViewDetails(appel)} className="btn-view-details-arrow">
+            <i className="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      );
     }
     return (
-      <button onClick={() => postuler(appel.id)} className="btn-postuler" disabled={loading}>
-        {loading ? '...' : 'Postuler'}
+      <button onClick={() => handleViewDetails(appel)} className="btn-view-details">
+        Voir détails
       </button>
     );
   };
@@ -328,6 +342,59 @@ const AppelsOffres = () => {
           </table>
         )}
       </div>
+
+      {/* Modal pour les détails de l'appel d'offre */}
+      {selectedAppel && (
+        <div className="modal">
+          <div className="modal-content details-modal">
+            <div className="modal-header">
+              <h2>Détails de l'appel d'offre</h2>
+              <button onClick={handleCloseDetails} className="close-button">&times;</button>
+            </div>
+            <div className="details-content">
+              <div className="details-grid">
+                <div className="detail-item">
+                  <span className="detail-label">Site:</span>
+                  <span className="detail-value">{selectedAppel.site || '-'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">N° AO:</span>
+                  <span className="detail-value">{selectedAppel.numeroAO || '-'}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Dénomination:</span>
+                  <span className="detail-value">{selectedAppel.titre}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Montant Estimatif:</span>
+                  <span className="detail-value">
+                    {selectedAppel.montantEstimatif ? `${Number(selectedAppel.montantEstimatif).toLocaleString('fr-MA')} DH` : '-'}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Date de Lancement:</span>
+                  <span className="detail-value">{formatDate(selectedAppel.dateLancement)}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Date Limite:</span>
+                  <span className="detail-value">{formatDate(selectedAppel.dateLimite)}</span>
+                </div>
+              </div>
+              <div className="description-section">
+                <h3>Description</h3>
+                <p className="description-text">{selectedAppel.description || 'Aucune description disponible.'}</p>
+              </div>
+              {userRole === 'USER' && !isDateExpired(selectedAppel.dateLimite) && !userApplications[selectedAppel.id] && (
+                <div className="postulation-action">
+                  <button onClick={() => postuler(selectedAppel.id)} className="btn-postuler" disabled={loading}>
+                    {loading ? 'En cours...' : 'Postuler'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal pour Ajouter/Modifier, s'affiche seulement si userRole est SERVICE */}
       {/* MODIFIÉ ICI: userRole === 'SERVICE' au lieu de 'ADMIN' */}

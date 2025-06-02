@@ -6,6 +6,7 @@ const ServiceDashboard = () => {
   const [loadingPostulations, setLoadingPostulations] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [selectedPostulation, setSelectedPostulation] = useState(null);
 
   // Fonction de navigation simple (si nécessaire pour la déconnexion sur 401)
   const navigate = (path) => {
@@ -132,6 +133,14 @@ const ServiceDashboard = () => {
     }
   };
 
+  const handleViewDetails = (postulation) => {
+    setSelectedPostulation(postulation);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedPostulation(null);
+  };
+
   return (
     <div className="service-dashboard container">
       <div className="service-header">
@@ -191,18 +200,12 @@ const ServiceDashboard = () => {
                     postulations.map(postulation => (
                       <tr key={postulation.id}>
                         <td>{postulation.id}</td>
+                        <td>{postulation.userName}</td>
+                        <td>{postulation.userEmail}</td>
                         <td>
-                          {postulation.user ?
-                            `${postulation.user.firstName} ${postulation.user.lastName}` :
-                            'Utilisateur non disponible'
-                          }
-                        </td>
-                        <td>{postulation.emailUser}</td>
-                        <td>
-                          {postulation.appelOffre ?
-                            postulation.appelOffre.titre :
-                            'Appel d\'offre non disponible'
-                          }
+                          {postulation.appelOffreTitre}
+                          {postulation.appelOffreNumeroAO && ` (${postulation.appelOffreNumeroAO})`}
+                          {postulation.appelOffreSite && ` - ${postulation.appelOffreSite}`}
                         </td>
                         <td>
                           {new Date(postulation.datePostulation).toLocaleDateString('fr-FR')}
@@ -213,6 +216,12 @@ const ServiceDashboard = () => {
                           </span>
                         </td>
                         <td className="action-buttons">
+                          <button
+                            className="action-btn action-btn-info me-1"
+                            onClick={() => handleViewDetails(postulation)}
+                          >
+                            <i className="bi bi-arrow-right-circle"></i>
+                          </button>
                           {postulation.statut === 'EN_ATTENTE' && (
                             <>
                               <button
@@ -251,6 +260,106 @@ const ServiceDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de détails */}
+      {selectedPostulation && (
+        <div className="modal-overlay">
+          <div className="details-modal">
+            <div className="modal-header">
+              <h3>Détails de la postulation</h3>
+              <button className="close-button" onClick={handleCloseDetails}>
+                <i className="bi bi-x"></i>
+              </button>
+            </div>
+            <div className="details-content">
+              <div className="details-grid">
+                <div className="detail-item">
+                  <span className="detail-label">ID Postulation:</span>
+                  <span className="detail-value">{selectedPostulation.id}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Date de postulation:</span>
+                  <span className="detail-value">
+                    {new Date(selectedPostulation.datePostulation).toLocaleDateString('fr-FR')}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Statut:</span>
+                  <span className={`detail-value status-badge ${getStatusBadgeClass(selectedPostulation.statut)}`}>
+                    {getStatusText(selectedPostulation.statut)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="details-section">
+                <h4>Informations du postulant</h4>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Nom complet:</span>
+                    <span className="detail-value">{selectedPostulation.userName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Email:</span>
+                    <span className="detail-value">{selectedPostulation.userEmail}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="details-section">
+                <h4>Informations de l'appel d'offre</h4>
+                <div className="details-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Titre:</span>
+                    <span className="detail-value">{selectedPostulation.appelOffreTitre}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Numéro AO:</span>
+                    <span className="detail-value">{selectedPostulation.appelOffreNumeroAO || '-'}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Site:</span>
+                    <span className="detail-value">{selectedPostulation.appelOffreSite || '-'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                {selectedPostulation.statut === 'EN_ATTENTE' && (
+                  <>
+                    <button
+                      className="action-btn action-btn-success me-2"
+                      onClick={() => {
+                        handleUpdatePostulationStatus(selectedPostulation.id, 'ACCEPTEE');
+                        handleCloseDetails();
+                      }}
+                    >
+                      Accepter
+                    </button>
+                    <button
+                      className="action-btn action-btn-warning me-2"
+                      onClick={() => {
+                        handleUpdatePostulationStatus(selectedPostulation.id, 'REFUSEE');
+                        handleCloseDetails();
+                      }}
+                    >
+                      Rejeter
+                    </button>
+                  </>
+                )}
+                <button
+                  className="action-btn action-btn-danger"
+                  onClick={() => {
+                    handleDeletePostulation(selectedPostulation.id);
+                    handleCloseDetails();
+                  }}
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

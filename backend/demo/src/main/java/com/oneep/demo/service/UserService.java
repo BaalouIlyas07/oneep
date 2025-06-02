@@ -5,20 +5,28 @@ import com.oneep.demo.exeption.UserAlreadyExistsException;
 import com.oneep.demo.model.Role;
 import com.oneep.demo.model.User;
 import com.oneep.demo.repository.UserRepository;
+import com.oneep.demo.repository.PostulationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
 
 @Service
 public class UserService {
-
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PostulationRepository postulationRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, PostulationRepository postulationRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.postulationRepository = postulationRepository;
     }
 
     public User registerUser(UserRegistrationDto registrationDto) {
@@ -79,17 +87,47 @@ public class UserService {
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'id " + id));
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        logger.info("Début de la suppression de l'utilisateur ID: {} et ses postulations", id);
+        try {
+            // Supprimer d'abord toutes les postulations de l'utilisateur
+            postulationRepository.deleteByUserId(id);
+            logger.info("Postulations supprimées pour l'utilisateur ID: {}", id);
+
+            // Ensuite supprimer l'utilisateur
+            userRepository.deleteById(id);
+            logger.info("Utilisateur ID: {} supprimé avec succès", id);
+        } catch (Exception e) {
+            logger.error("Erreur lors de la suppression de l'utilisateur ID: {}. Erreur: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Erreur lors de la suppression de l'utilisateur: " + e.getMessage());
+        }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public User updateUserStatus(Long id, boolean active) {
-        return userRepository.findById(id)
-            .map(user -> {
-                user.setActive(active);
-                return userRepository.save(user);
-            })
-            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'id " + id));
+        logger.info("Début de la mise à jour du statut de l'utilisateur. ID: {}, Nouveau statut: {}", id, active);
+        try {
+            User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.error("Utilisateur non trouvé avec l'ID: {}", id);
+                    return new RuntimeException("Utilisateur non trouvé avec l'id " + id);
+                });
+            
+            logger.info("Utilisateur trouvé: {} (Email: {})", user.getFirstName() + " " + user.getLastName(), user.getEmail());
+            logger.info("Ancien statut actif: {}, Nouveau statut actif: {}", user.isActive(), active);
+            
+            userRepository.updateUserStatus(id, active);
+            
+            User updatedUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Erreur lors du rechargement de l'utilisateur"));
+            
+            logger.info("Mise à jour réussie pour l'utilisateur ID: {}", updatedUser.getId());
+            return updatedUser;
+        } catch (Exception e) {
+            logger.error("Erreur lors de la mise à jour du statut de l'utilisateur ID: {}. Erreur: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Erreur lors de la mise à jour du statut de l'utilisateur: " + e.getMessage());
+        }
     }
 
     public User getUserById(Long id) {

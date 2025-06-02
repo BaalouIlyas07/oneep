@@ -59,7 +59,7 @@ const Header = () => {
             {isLoggedIn ? (
               <>
                 {userRole === 'ADMIN' && (
-                  <Link to="/admin-dashboard" className="btn btn-dashboard" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/admin" className="btn btn-dashboard" onClick={() => setIsMenuOpen(false)}>
                     Dashboard Admin
                   </Link>
                 )}
