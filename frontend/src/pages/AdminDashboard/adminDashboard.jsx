@@ -12,8 +12,7 @@ const AdminDashboard = () => {
     firstName: '',
     lastName: '',
     email: '',
-    role: 'USER',
-    password: 'password123' // Mot de passe par défaut
+    role: 'USER'
   });
   // Les états pour le dropdown de rôle ont été supprimés
 
@@ -88,8 +87,7 @@ const AdminDashboard = () => {
       firstName: '',
       lastName: '',
       email: '',
-      role: 'USER',
-      password: 'password123'
+      role: 'USER'
     });
   };
 
@@ -118,8 +116,7 @@ const AdminDashboard = () => {
     setSuccessMessage('');
 
     try {
-      // S'assurer que cet endpoint est sécurisé et prévu pour la création par un admin
-      const response = await fetch('http://localhost:8080/api/admin/users/add', { 
+      const response = await fetch('http://localhost:8080/api/admin/users', { 
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`, 
@@ -129,7 +126,7 @@ const AdminDashboard = () => {
           firstName: newUser.firstName.trim(),
           lastName: newUser.lastName.trim(),
           email: newUser.email.trim().toLowerCase(),
-          password: newUser.password,
+          password: 'password123', // Mot de passe par défaut
           role: newUser.role 
         }),
       });
@@ -145,7 +142,6 @@ const AdminDashboard = () => {
       resetForm();
       setShowAddUserForm(false);
       if (createdUser && createdUser.id) {
-        // Assurer que `active` a une valeur par défaut si non retourné par l'API
         setUsers(prevUsers => [...prevUsers, { ...createdUser, active: createdUser.active !== undefined ? createdUser.active : true }]);
       } else {
         fetchUsers(); 
@@ -312,21 +308,11 @@ const AdminDashboard = () => {
                   <option value="SERVICE">Service</option>
                 </select>
               </div>
-               <div className="form-group">
-                  <label htmlFor="password">Mot de passe</label>
-                  <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    value={newUser.password} 
-                    onChange={handleInputChange} 
-                    required 
-                    placeholder="Minimum 6 caractères"
-                  />
-                   <p className="form-text">
-                     Le mot de passe par défaut suggéré est "password123" si non modifié. L'utilisateur pourra le changer.
-                   </p>
-                </div>
+              <div className="form-group">
+                <p className="form-text">
+                  Le mot de passe par défaut sera "password123". L'utilisateur pourra le changer lors de sa première connexion.
+                </p>
+              </div>
               <div className="form-group">
                 <button type="submit" className="submit-button" disabled={isSubmitting}>
                   {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}

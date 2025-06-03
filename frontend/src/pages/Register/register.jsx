@@ -2,24 +2,15 @@ import { useState } from 'react';
 import './register.css';
 
 export default function RegistrationForm() {
-  const [accountType, setAccountType] = useState('');
   const [formData, setFormData] = useState({
-    // Common fields
     email: '',
     password: '',
     confirmPassword: '',
     phoneNumber: '',
-    
-    // Individual fields
     cin: '',
     firstName: '',
     lastName: '',
-    address: '',
-    
-    // Company fields
-    companyName: '',
-    businessName: '',
-    tradeRegisterNumber: ''
+    address: ''
   });
   
   const [error, setError] = useState('');
@@ -35,13 +26,10 @@ export default function RegistrationForm() {
   };
 
   const validateForm = () => {
-    if (!accountType) {
-      setError('Veuillez sélectionner un type de compte.');
-      return false;
-    }
-
-    if (!formData.email || !formData.password || !formData.confirmPassword || !formData.phoneNumber) {
-      setError('Tous les champs communs doivent être remplis.');
+    if (!formData.email || !formData.password || !formData.confirmPassword || 
+        !formData.phoneNumber || !formData.cin || !formData.firstName || 
+        !formData.lastName || !formData.address) {
+      setError('Tous les champs doivent être remplis.');
       return false;
     }
 
@@ -53,18 +41,6 @@ export default function RegistrationForm() {
     if (formData.password.length < 6) {
       setError('Le mot de passe doit contenir au moins 6 caractères.');
       return false;
-    }
-
-    if (accountType === 'INDIVIDUAL') {
-      if (!formData.cin || !formData.firstName || !formData.lastName || !formData.address) {
-        setError('Tous les champs de la personne physique doivent être remplis.');
-        return false;
-      }
-    } else if (accountType === 'COMPANY') {
-      if (!formData.companyName || !formData.businessName || !formData.tradeRegisterNumber) {
-        setError('Tous les champs de la personne morale doivent être remplis.');
-        return false;
-      }
     }
 
     return true;
@@ -85,10 +61,7 @@ export default function RegistrationForm() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          accountType,
-          ...formData
-        })
+        body: JSON.stringify(formData)
       });
 
       const data = await response.json();
@@ -106,12 +79,8 @@ export default function RegistrationForm() {
         cin: '',
         firstName: '',
         lastName: '',
-        address: '',
-        companyName: '',
-        businessName: '',
-        tradeRegisterNumber: ''
+        address: ''
       });
-      setAccountType('');
 
       setTimeout(() => {
         window.location.href = '/login';
@@ -131,125 +100,58 @@ export default function RegistrationForm() {
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
 
-        <div className="form-group">
-          <label>Type de compte</label>
-          <div className="account-type-buttons">
-            <button
-              type="button"
-              className={`account-type-button ${accountType === 'INDIVIDUAL' ? 'active' : ''}`}
-              onClick={() => setAccountType('INDIVIDUAL')}
-            >
-              Personne Physique
-            </button>
-            <button
-              type="button"
-              className={`account-type-button ${accountType === 'COMPANY' ? 'active' : ''}`}
-              onClick={() => setAccountType('COMPANY')}
-            >
-              Personne Morale
-            </button>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="lastName">Nom</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              placeholder="Entrez votre nom"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="firstName">Prénom</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              placeholder="Entrez votre prénom"
+              required
+            />
           </div>
         </div>
 
-        {accountType === 'INDIVIDUAL' && (
-          <>
-            <div className="form-group">
-              <label htmlFor="cin">CIN</label>
-              <input
-                type="text"
-                id="cin"
-                name="cin"
-                value={formData.cin}
-                onChange={handleChange}
-                placeholder="Entrez votre CIN"
-                required
-              />
-            </div>
+        <div className="form-group">
+          <label htmlFor="cin">CIN</label>
+          <input
+            type="text"
+            id="cin"
+            name="cin"
+            value={formData.cin}
+            onChange={handleChange}
+            placeholder="Entrez votre CIN"
+            required
+          />
+        </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="lastName">Nom</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  placeholder="Entrez votre nom"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="firstName">Prénom</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  placeholder="Entrez votre prénom"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="address">Adresse</label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="Entrez votre adresse"
-                required
-              />
-            </div>
-          </>
-        )}
-
-        {accountType === 'COMPANY' && (
-          <>
-            <div className="form-group">
-              <label htmlFor="companyName">Nom de la société</label>
-              <input
-                type="text"
-                id="companyName"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleChange}
-                placeholder="Entrez le nom de la société"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="businessName">Raison sociale</label>
-              <input
-                type="text"
-                id="businessName"
-                name="businessName"
-                value={formData.businessName}
-                onChange={handleChange}
-                placeholder="Entrez la raison sociale"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="tradeRegisterNumber">Numéro de registre du commerce</label>
-              <input
-                type="text"
-                id="tradeRegisterNumber"
-                name="tradeRegisterNumber"
-                value={formData.tradeRegisterNumber}
-                onChange={handleChange}
-                placeholder="Entrez le numéro de registre du commerce"
-                required
-              />
-            </div>
-          </>
-        )}
+        <div className="form-group">
+          <label htmlFor="address">Adresse</label>
+          <input
+            type="text"
+            id="address"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            placeholder="Entrez votre adresse"
+            required
+          />
+        </div>
 
         <div className="form-group">
           <label htmlFor="email">Email</label>

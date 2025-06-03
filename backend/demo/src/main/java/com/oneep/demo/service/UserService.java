@@ -35,22 +35,13 @@ public class UserService {
         }
 
         User user = new User();
-        user.setAccountType(registrationDto.getAccountType());
-        
-        if ("INDIVIDUAL".equals(registrationDto.getAccountType())) {
-            user.setCin(registrationDto.getCin());
-            user.setFirstName(registrationDto.getFirstName());
-            user.setLastName(registrationDto.getLastName());
-            user.setAddress(registrationDto.getAddress());
-        } else if ("COMPANY".equals(registrationDto.getAccountType())) {
-            user.setCompanyName(registrationDto.getCompanyName());
-            user.setBusinessName(registrationDto.getBusinessName());
-            user.setTradeRegisterNumber(registrationDto.getTradeRegisterNumber());
-        }
-
         user.setEmail(registrationDto.getEmail());
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setPhoneNumber(registrationDto.getPhoneNumber());
+        user.setCin(registrationDto.getCin());
+        user.setFirstName(registrationDto.getFirstName());
+        user.setLastName(registrationDto.getLastName());
+        user.setAddress(registrationDto.getAddress());
         user.setRole(registrationDto.getRole() != null ? registrationDto.getRole() : Role.USER);
 
         return userRepository.save(user);

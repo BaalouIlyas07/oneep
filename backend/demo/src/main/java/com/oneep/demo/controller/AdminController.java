@@ -8,6 +8,7 @@ import com.oneep.demo.model.User;
 import com.oneep.demo.dto.ErrorResponse;
 import com.oneep.demo.dto.PostulationDTO;
 import com.oneep.demo.service.PostulationService;
+import com.oneep.demo.dto.UserRegistrationDto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,18 @@ public class AdminController {
         this.userService = userService;
         this.postulationRepository = postulationRepository;
         this.postulationService = postulationService;
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<?> createUser(@RequestBody UserRegistrationDto registrationDto) {
+        try {
+            User createdUser = userService.registerUser(registrationDto);
+            return ResponseEntity.ok(createdUser);
+        } catch (Exception e) {
+            logger.error("Erreur lors de la création de l'utilisateur: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("Erreur lors de la création de l'utilisateur: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/users")
