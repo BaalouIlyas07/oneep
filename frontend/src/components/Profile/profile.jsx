@@ -8,6 +8,7 @@ const Profile = () => {
     lastName: '',
     email: '',
     phoneNumber: '',
+    cin: '',
     password: '',
   });
   const [loading, setLoading] = useState(true);
@@ -31,10 +32,11 @@ const Profile = () => {
       if (response.ok) {
         const data = await response.json();
         setUser({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          email: data.email || '',
           phoneNumber: data.phoneNumber || '',
+          cin: data.cin || '',
           password: '',
         });
       } else if (response.status === 401) {
@@ -42,10 +44,10 @@ const Profile = () => {
         localStorage.removeItem('role');
         navigate('/login');
       } else {
-        setError('Failed to load profile');
+        setError('Échec du chargement du profil');
       }
     } catch (err) {
-      setError('Error connecting to server');
+      setError('Erreur de connexion au serveur');
       console.error(err);
     } finally {
       setLoading(false);
@@ -59,6 +61,9 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:8080/api/users/profile', {
@@ -67,11 +72,19 @@ const Profile = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify({
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phoneNumber: user.phoneNumber,
+          cin: user.cin,
+          password: user.password || undefined // N'envoyer le mot de passe que s'il est modifié
+        }),
       });
 
       if (response.ok) {
-        setSuccess('Profile updated successfully');
+        setSuccess('Profil mis à jour avec succès');
+        // Réinitialiser le champ mot de passe après une mise à jour réussie
+        setUser(prev => ({ ...prev, password: '' }));
         setTimeout(() => setSuccess(null), 3000);
       } else if (response.status === 401) {
         localStorage.removeItem('token');
@@ -79,27 +92,27 @@ const Profile = () => {
         navigate('/login');
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to update profile');
+        setError(errorData.message || 'Échec de la mise à jour du profil');
       }
     } catch (err) {
-      setError('Error connecting to server');
+      setError('Erreur de connexion au serveur');
       console.error(err);
     }
   };
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return <div className="loading">Chargement...</div>;
   }
 
   return (
     <div className="profile-page">
       <div className="profile-container">
-        <h2>Profile</h2>
+        <h2>Profil</h2>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
         <form onSubmit={handleSubmit} className="profile-form">
           <div className="form-group">
-            <label htmlFor="firstName">First Name</label>
+            <label htmlFor="firstName">Prénom</label>
             <input
               type="text"
               id="firstName"
@@ -111,7 +124,7 @@ const Profile = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="lastName">Last Name</label>
+            <label htmlFor="lastName">Nom</label>
             <input
               type="text"
               id="lastName"
@@ -134,7 +147,7 @@ const Profile = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="phoneNumber">Phone Number</label>
+            <label htmlFor="phoneNumber">Numéro de téléphone</label>
             <input
               type="text"
               id="phoneNumber"
@@ -143,19 +156,33 @@ const Profile = () => {
               onChange={handleInputChange}
             />
           </div>
+
+          <div className="form-group">
+            <label htmlFor="cin">CIN</label>
+            <input
+              type="text"
+              id="cin"
+              name="cin"
+              value={user.cin}
+              onChange={handleInputChange}
+              disabled={user.cin && user.cin.trim() !== ''}
+              placeholder={user.cin && user.cin.trim() !== '' ? "CIN déjà défini" : "Entrez votre CIN"}
+            />
+          </div>
           
           <div className="form-group">
-            <label htmlFor="password">New Password (leave blank to keep current)</label>
+            <label htmlFor="password">Nouveau mot de passe (laisser vide pour conserver l'actuel)</label>
             <input
               type="password"
               id="password"
               name="password"
               value={user.password}
               onChange={handleInputChange}
+              minLength="6"
             />
           </div>
           
-          <button type="submit" className="submit-button">Update Profile</button>
+          <button type="submit" className="submit-button">Mettre à jour le profil</button>
         </form>
       </div>
     </div>

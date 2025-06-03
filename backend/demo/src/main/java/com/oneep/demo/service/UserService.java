@@ -43,6 +43,7 @@ public class UserService {
         user.setLastName(registrationDto.getLastName());
         user.setAddress(registrationDto.getAddress());
         user.setRole(registrationDto.getRole() != null ? registrationDto.getRole() : Role.USER);
+        user.setActive(true);
 
         return userRepository.save(user);
     }
